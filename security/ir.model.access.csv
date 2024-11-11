@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lost_message_parent,access_lost_message_parent,model_lost_message_parent,base.group_user,1,1,1,1
+access_schedule_send,access_schedule_send,model_schedule_send,base.group_user,1,1,1,1
+
+

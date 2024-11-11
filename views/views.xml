@@ -1,0 +1,84 @@
+<odoo>
+  <data>
+  
+    <record id="view_res_config_settings_inherit" model="ir.ui.view">
+      <field name="name">res.config.settings.view.form.manual.routing</field>
+      <field name="model">res.config.settings</field>
+      <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//form" position="inside">
+          <app data-string="Lost Messages" string="Lost Messages" name="mail_manual_routing">
+            <block title="Lost Messages">
+              <setting help="Choose Odoo models to which lost messages might be assigned. If empty, it would be possible to assign them to any Odoo thread object">
+                <field name="lost_allowed_model_ids" widget="many2many_tags" options="{'no_create_edit':'1', 'no_quick_create': '1'}" domain="[('transient', '=', 0), ('is_mail_thread', '=', 1), ('access_ids', '!=', False)]" class="w-100"/>
+                <field name="lost_allowed_model_ids_str" invisible="1"/>
+              </setting>
+              <setting help="If checked, a notification by each lost message would be sent to the chosen users">
+                <field name="notify_about_lost_messages"/>
+                <div invisible="not notify_about_lost_messages">
+                  <label for="notify_lost_user_ids" class="o_light_label w-100"/>
+                  <field name="notify_lost_user_ids" widget="many2many_tags" options="{'no_create_edit':'1', 'no_quick_create': '1'}" class="w-100"/>
+                  <field name="notify_lost_user_ids_str" invisible="1"/>
+                </div>
+              </setting>
+            </block>
+          </app>
+        </xpath>
+      </field>
+    </record>
+
+    <record id="mail_message_view_form_inherit" model="ir.ui.view">
+      <field name="name">mail.message form</field>
+      <field name="model">mail.message</field>
+      <field name="inherit_id" ref="mail.mail_message_view_form"/>
+      <field name="arch" type="xml">
+        <data>
+          <field name="email_from" position="before">
+            <field name="is_unattached" />
+            </field>
+          <xpath expr="//sheet" position="before">
+            <header>
+              <button class="oe_highlight" string="Route manual" name="action_attach" type="object" />
+            </header>
+          </xpath>
+          <field name="parent_id" position="after">
+            <field name="attachment_ids" widget="many2many_binary"/>
+            <field name="lost_comments" invisible="not is_unattached" />
+            </field>
+        </data>
+      </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="lost_message_settings_action" model="ir.actions.act_window">
+      <field name="name">Settings</field>
+      <field name="res_model">res.config.settings</field>
+      <field name="view_mode">form</field>
+      <field name="target">inline</field>
+      <field name="context">{'module': 'mail_manual_routing'}</field>
+    </record>
+
+    <record model="ir.actions.server" id="mail_manual_routing.action_server">
+      <field name="name">Lost Messages</field>
+      <field name="model_id" ref="mail.model_mail_message"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+            "name": 'Lost Messages',
+            "type": "ir.actions.act_window",
+            "view_mode": "tree,form",
+            "res_model": "mail.message",
+            "domain": [("is_unattached", "=", True)]
+        }
+      </field>
+    </record>
+
+    <!-- Top menu item -->
+    <menuitem name="Lost Messages" id="mail_manual_routing.menu_root" web_icon="mail_manual_routing,static/description/icon.png"/>
+    <!-- Menu categories -->
+
+    <!-- <menuitem name="Lost Messages" id="mail_manual_routing.menu_lost_message" parent="mail_manual_routing.menu_root" action="mail.action_view_mail_message"/> -->
+    <menuitem name="Lost Messages" id="mail_manual_routing.menu_lost_message" parent="mail_manual_routing.menu_root" action="mail_manual_routing.action_server"/>
+    <menuitem name="Settings" id="mail_manual_routing.menu_lost_message_settings" parent="mail_manual_routing.menu_root" sequence="45" action="lost_message_settings_action"/>
+  </data>
+</odoo>
